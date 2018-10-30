@@ -23,6 +23,11 @@ contract Remittance {
         address => uint
     ) balances;
 
+    // log event
+    event LogCreateRemittanceNote(address owner, uint amount);
+    event LogExchangeRemittance(address exchanger, uint amount);
+    event LogWithdraw(address receiver, uint amount);
+
     constructor () public {
         owner = msg.sender;
     }
@@ -47,6 +52,8 @@ contract Remittance {
         require(isNotExist(puzzle), "Remittance Exist");
 
         RemittanceNotes[puzzle] = RemittanceNote(puzzle, msg.value, address(0), true);
+
+        emit LogCreateRemittanceNote(msg.sender, msg.value);
         return true;
     }
 
@@ -75,15 +82,17 @@ contract Remittance {
         // exchanger can accumulating their balance
         balances[msg.sender] = balances[msg.sender].add(RemittanceNotes[puzzle].amount);
 
+        emit LogExchangeRemittance(msg.sender, RemittanceNotes[puzzle].amount);
         return true;
     }
 
     function withdraw() public payable returns (bool) {
         require (balances[msg.sender] > 0, "reciever has no balance to withdraw");
 
-        msg.sender.transfer(balances[msg.sender]);
         balances[msg.sender] = 0;
+        emit LogWithdraw(msg.sender, balances[msg.sender]);
 
+        msg.sender.transfer(balances[msg.sender]);
         return true;
     }
 
