@@ -89,10 +89,11 @@ contract Remittance {
     function withdraw() public payable returns (bool) {
         require (balances[msg.sender] > 0, "reciever has no balance to withdraw");
 
+        uint balance = balances[msg.sender];
         balances[msg.sender] = 0;
-        emit LogWithdraw(msg.sender, balances[msg.sender]);
+        emit LogWithdraw(msg.sender, balance);
 
-        msg.sender.transfer(balances[msg.sender]);
+        msg.sender.transfer(balance);
         return true;
     }
 
