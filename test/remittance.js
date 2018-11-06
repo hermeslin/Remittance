@@ -1,9 +1,5 @@
 import { default as Promise } from 'bluebird';
-import Chai from "chai";
-import ChaiAsPromised from "chai-as-promised";
-
-Chai.use(ChaiAsPromised);
-const { expect } = Chai;
+import expectedExceptionPromise from '../util/expectedExceptionPromise'
 
 const Remittance = artifacts.require("Remittance");
 
@@ -13,10 +9,6 @@ const calculateTransactionFee = async (transaction) => {
   let tx = await web3.eth.getTransactionPromise(transaction.tx);
   return tx.gasPrice.mul(transaction.receipt.gasUsed);
 }
-
-const VM_ERROR = {
-  revert: 'VM Exception while processing transaction: revert '
-};
 
 contract('Remittance', async (accounts) => {
 
@@ -105,43 +97,27 @@ contract('Remittance', async (accounts) => {
     })
   })
 
-  // describe('only owner can create a new remittance note', function () {
-  //   it('should be throw error', async function () {
-  //     await expect(
-  //       remittance.createRemittanceNote('1234', '456', { from: bob, value: 10 })
-  //     ).to.eventually.rejectedWith(`${VM_ERROR.revert}only owner can create remittance note`)
-  //   });
-  // });
+  describe('can not use the same password ', function () {
+    beforeEach('create a new remittance note first ', async function () {
+      await remittance.createRemittanceNote(puzzle, { from: alice, value: 10 });
+    });
 
-  // describe('can not use the same password ', function () {
-  //   beforeEach('create a new remittance note first ', async function () {
-  //     await remittance.createRemittanceNote('1234', '456', { from: alice, value: 10 });
-  //   });
+    it('should have reverted', async function () {
+      await expectedExceptionPromise(() => (
+        remittance.createRemittanceNote(puzzle, { from: bob, value: 10 })
+      ))
+    });
+  });
 
-  //   it('should be throw error', async function () {
-  //     await expect(
-  //       remittance.createRemittanceNote('1234', '456', { from: alice, value: 10 })
-  //     ).to.eventually.rejectedWith(`${VM_ERROR.revert}Remittance Exist`)
-  //   });
+  describe('can not withdraw when given wrong password', function () {
+    beforeEach('create a new remittance note first ', async function () {
+      await remittance.createRemittanceNote(puzzle, { from: alice, value: 10 });
+    });
 
-  //   it('should be throw error even remittance has exchangeed', async function (){
-  //     await remittance.exchangeRemittance('1234', '456', { from: bob });
-
-  //     await expect(
-  //       remittance.createRemittanceNote('1234', '456', { from: alice, value: 10 })
-  //     ).to.eventually.rejectedWith(`${VM_ERROR.revert}Remittance Exist`)
-  //   })
-  // });
-
-  // describe('can not exchange remittance when given wrong password', function () {
-  //   beforeEach('create a new remittance note first ', async function () {
-  //     await remittance.createRemittanceNote('1234', '456', { from: alice, value: 10 });
-  //   });
-
-  //   it('should be throw error', async function () {
-  //     await expect(
-  //       remittance.exchangeRemittance('777', '666', { from: bob })
-  //     ).to.eventually.rejectedWith(`${VM_ERROR.revert}Remittance Exchanged`)
-  //   })
-  // });
+    it('should have reverted', async function () {
+      await expectedExceptionPromise(() => (
+        remittance.withdraw(web3.fromUtf8("777"), web3.fromUtf8("666"), { from: bob, value: 10 })
+      ))
+    });
+  });
 });

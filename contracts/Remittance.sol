@@ -55,7 +55,7 @@ contract Remittance {
         return keccak256(abi.encodePacked(passwordA, passwordB, address(this)));
     }
 
-    function withdraw(bytes32 passwordA, bytes32 passwordB) public returns (bool) {
+    function withdraw(bytes32 passwordA, bytes32 passwordB) public payable returns (bool) {
         bytes32 puzzle = getPuzzle(passwordA, passwordB);
         require(isNotExchanged(puzzle), "Remittance Exchanged");
 
