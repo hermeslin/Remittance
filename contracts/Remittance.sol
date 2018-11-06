@@ -15,8 +15,8 @@ contract Remittance {
     ) remittanceNotes;
 
     // log event
-    event LogCreateRemittanceNote(bytes32 puzzle, uint amount);
-    event LogWithdraw(bytes32 puzzle, address exchanger);
+    event LogCreateRemittanceNote(bytes32 puzzle, uint amount, address exchanger, bool isExist);
+    event LogWithdraw(bytes32 puzzle, uint amount, address exchanger, bool isExist);
 
     constructor () public {
         owner = msg.sender;
@@ -44,7 +44,7 @@ contract Remittance {
             isExist: true
         });
 
-        emit LogCreateRemittanceNote(puzzle, msg.value);
+        emit LogCreateRemittanceNote(puzzle, remittanceNotes[puzzle].amount, remittanceNotes[puzzle].exchanger, remittanceNotes[puzzle].isExist);
         return true;
     }
 
@@ -61,11 +61,12 @@ contract Remittance {
 
         remittanceNotes[puzzle].exchanger = msg.sender;
         msg.sender.transfer(remittanceNotes[puzzle].amount);
-        emit LogWithdraw(puzzle, msg.sender);
+        emit LogWithdraw(puzzle, remittanceNotes[puzzle].amount, remittanceNotes[puzzle].exchanger, remittanceNotes[puzzle].isExist);
 
         return true;
     }
 
+    // TODO: use softer / reversible methods to stop / pause a contract
     function kill() public {
         if (msg.sender == owner) selfdestruct(owner);
     }

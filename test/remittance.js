@@ -70,6 +70,8 @@ contract('Remittance', async (accounts) => {
       assert.equal(event, 'LogCreateRemittanceNote');
       assert.equal(args.puzzle, puzzle);
       assert.equal(args.amount.toString(), '10');
+      assert.equal(web3.toBigNumber(args.exchanger).isZero(), true);
+      assert.equal(args.isExist, true);
     })
   });
 
@@ -98,6 +100,8 @@ contract('Remittance', async (accounts) => {
       assert.equal(event, 'LogWithdraw');
       assert.equal(args.puzzle, puzzle);
       assert.equal(args.exchanger, bob);
+      assert.equal(args.amount.toString(), '10');
+      assert.equal(args.isExist, true);
     })
   })
 
