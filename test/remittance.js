@@ -24,9 +24,12 @@ contract('Remittance', async (accounts) => {
 
   let remittance;
   let puzzle;
+  let passwordA = web3.fromUtf8("123");
+  let passwordB = web3.fromUtf8("456");
+
   beforeEach('Deploy new contract instance and get new puzzle back', async function () {
     remittance = await Remittance.new({ from: alice });
-    puzzle = await remittance.getPuzzle('123', '456');
+    puzzle = await remittance.getPuzzle(passwordA, passwordB);
   });
 
   describe('remittance state', function () {
@@ -37,9 +40,9 @@ contract('Remittance', async (accounts) => {
       assert.equal(isNotExist, false);
     });
 
-    it('should be exchanged', async function () {
+    it('should be withdraw', async function () {
       await remittance.createRemittanceNote(puzzle, { from: alice, value: 10 });
-      await remittance.withdraw('123', '456', { from: bob });
+      await remittance.withdraw(passwordA, passwordB, { from: bob });
 
       let isNotExchanged = await remittance.isNotExchanged(puzzle);
       assert.equal(isNotExchanged, false);
@@ -76,13 +79,13 @@ contract('Remittance', async (accounts) => {
     });
 
     it('simulate exchange the remittance', async function () {
-      let simulate = await remittance.withdraw.call('123', '456');
+      let simulate = await remittance.withdraw.call(passwordA, passwordB);
       assert.equal(simulate, true);
     });
 
     it('should take money back', async function () {
       let balance = await web3.eth.getBalancePromise(bob);
-      let transaction = await remittance.withdraw('123', '456', { from: bob });
+      let transaction = await remittance.withdraw(passwordA, passwordB, { from: bob });
       let transactionFee = await calculateTransactionFee(transaction);
       let balanceFinal = await web3.eth.getBalancePromise(bob);
 
@@ -90,7 +93,7 @@ contract('Remittance', async (accounts) => {
     });
 
     it('should receive LogWithdraw event log', async function () {
-      let transaction = await remittance.withdraw('123', '456', { from: bob });
+      let transaction = await remittance.withdraw(passwordA, passwordB, { from: bob });
       let { event, args } = transaction.logs[0];
       assert.equal(event, 'LogWithdraw');
       assert.equal(args.puzzle, puzzle);

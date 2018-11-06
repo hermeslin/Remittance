@@ -48,14 +48,14 @@ contract Remittance {
         return true;
     }
 
-    function getPuzzle(string passwordA, string passwordB) public view returns (bytes32) {
-        require(bytes(passwordA).length > 0, "passwordA can't be blank");
-        require(bytes(passwordB).length > 0, "passwordB can't be blank");
+    function getPuzzle(bytes32 passwordA, bytes32 passwordB) public view returns (bytes32) {
+        require(passwordA.length > 0, "passwordA can't be blank");
+        require(passwordB.length > 0, "passwordB can't be blank");
 
         return keccak256(abi.encodePacked(passwordA, passwordB, address(this)));
     }
 
-    function withdraw(string passwordA, string passwordB) public returns (bool) {
+    function withdraw(bytes32 passwordA, bytes32 passwordB) public returns (bool) {
         bytes32 puzzle = getPuzzle(passwordA, passwordB);
         require(isNotExchanged(puzzle), "Remittance Exchanged");
 
